@@ -1,3 +1,5 @@
+#define _POSIX_C_SOURCE 2
+
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -5,23 +7,43 @@
 #include <unistd.h>
 #include <string.h>
 
+int run_file(char * file, char * result);
+
 int main()
 {
     char buf[1024];
     int readret;
 
-    readret = read(STDIN_FILENO,buf,1024);
-    int i = 1;
+    do
+    {
+        readret = read(STDIN_FILENO, buf, 1024);
+        if (readret)
+        {
+            char ret[2048];
+            run_file(buf, ret);
+            write(STDOUT_FILENO, ret, strlen(ret)+1);
+        }
+    } while (readret);
 
-    while(readret){
-    char ret[1024];
-    sprintf(ret, "Result = %d", i++);
-    sleep(1);
-    write(STDOUT_FILENO, ret, strlen(ret));
-    readret = read(STDIN_FILENO,buf,1024);
-    }
-    
     close(STDIN_FILENO);
     close(STDOUT_FILENO);
+
+    return 0;
+}
+
+int run_file(char * file, char * result){
+    char command[255];
+    sprintf(command, "minisat %s | grep -o -e 'Number of.*[0-9]' -e 'CPU time.*' -o -e '.*SATISFIABLE' | xargs | sed 's/ /\t/g'", file);
+    FILE * fd = popen(command, "r");
+
+    if(fd == NULL){
+        return -1;
+        result = "ERROR!";
+    }
+    
+    //strcpy(result, file);
+
+    fgets(result, 1024, fd);
+
     return 0;
 }
