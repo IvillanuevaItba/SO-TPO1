@@ -29,11 +29,11 @@ int main(int argc, char *argv[])
         printf("Incorrect amount of arguments. Expected entry: view <info>\n");
         return -1;
     }
-    else if (argc == 2)
+    else if (argc == 2) // Total Tasks passed through parameter
     {
         tasks_total = atoi(argv[1]);
     }
-    else
+    else    // Total Tasks passed through pipe
     {
         char input[10];
         read(STDIN_FILENO, input, 10);
@@ -42,6 +42,7 @@ int main(int argc, char *argv[])
 
     sleep(2);   // Wait for master to create Shared Memory
 
+    // Open Shared Memory and Semaphore
     int shm_fd = shm_open(SHM_NAME, O_RDONLY, 0666);
 
     if (shm_fd < 0)
@@ -61,6 +62,7 @@ int main(int argc, char *argv[])
 
     int offset = 0;
 
+    // Main Loop
     while (task_count < tasks_total)
     {
         sem_wait(sem_newResult);
@@ -68,12 +70,14 @@ int main(int argc, char *argv[])
         task_count++;
     }
 
+    // Clean up memory
     munmap(shm_buf, offset);
     close(shm_fd);
     sem_close(sem_newResult);
     return 0;
 }
 
+/* Prints only one line and returns the amount of bytes printed*/
 int println(char *s)
 {
     int i = 0;

@@ -15,6 +15,7 @@ int main()
     int readret;
     int exit_value = EXIT_SUCCESS;
 
+    // Main Loop
     do
     {
         readret = read(STDIN_FILENO, buf, 1024);
@@ -40,12 +41,14 @@ int main()
 
     } while (readret);
 
+    // Clean up memory
     close(STDIN_FILENO);
     close(STDOUT_FILENO);
 
     return exit_value;
 }
 
+/*Processes a CNF file using minisat. The result is copied to the pointer "result". Returns -1 on error.*/ 
 int run_file(char * file, char * result){
     char command[255];
     sprintf(command, "minisat %s | grep -o -e 'Number of.*[0-9]' -e 'CPU time.*' -o -e '.*SATISFIABLE' | xargs | sed 's/ /\t/g'", file);

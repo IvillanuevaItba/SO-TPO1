@@ -138,12 +138,11 @@ int main(int argc, char *argv[])
                             kill_slave(slaves + i, &slaves_active);
                         }
                     }
-                    else
+                    else        // Slave failed
                     {
                         tasks_received++;
-                        //write(STDOUT_FILENO, "Failed task\n", 13);
                         sem_post(sem_newTask);
-                        int slen = sprintf(shm_buf, "Slave error. Task %s failed.\n", slaves[i].task);
+                        int slen = sprintf(shm_buf, "Slave error: Task %s failed.\n", slaves[i].task);
                         shm_buf += slen;
                         kill_slave(slaves + i, &slaves_active);
                     }
