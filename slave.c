@@ -13,6 +13,7 @@ int main()
 {
     char buf[1024];
     int readret;
+    int exit_value = EXIT_SUCCESS;
 
     do
     {
@@ -20,15 +21,29 @@ int main()
         if (readret)
         {
             char ret[2048];
-            run_file(buf, ret);
-            write(STDOUT_FILENO, ret, strlen(ret)+1);
+            
+            int comerr = run_file(buf, ret);
+            if (comerr < 0){
+                exit_value = EXIT_FAILURE;
+                break;
+            }
+
+
+            int wrierr = write(STDOUT_FILENO, ret, strlen(ret)+1);
+            if(wrierr < 0)
+            {
+                perror("slave: write()");
+                exit_value = EXIT_FAILURE;
+                break;
+            }
         }
+
     } while (readret);
 
     close(STDIN_FILENO);
     close(STDOUT_FILENO);
 
-    return 0;
+    return exit_value;
 }
 
 int run_file(char * file, char * result){
@@ -38,10 +53,7 @@ int run_file(char * file, char * result){
 
     if(fd == NULL){
         return -1;
-        result = "ERROR!";
     }
-    
-    //strcpy(result, file);
 
     fgets(result, 1024, fd);
 
