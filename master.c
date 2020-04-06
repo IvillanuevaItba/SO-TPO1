@@ -42,9 +42,10 @@ int main(int argc, char *argv[])
     int tasks_sent = 0;
     int tasks_received = 0;
 
+    // Print total amount of tasks for the view process
     char task_out[10];
-    sprintf(task_out, "%d\n", tasks_total);
-    write(STDOUT_FILENO, task_out, 10);
+    int len = sprintf(task_out, "%d\n", tasks_total);
+    write(STDOUT_FILENO, task_out, len);
 
     int slaves_total = SLAVE_MAX_AMOUNT < tasks_total ? SLAVE_MAX_AMOUNT : tasks_total;
     int slaves_active = 0;
@@ -139,7 +140,12 @@ int main(int argc, char *argv[])
                     }
                     else
                     {
-                        // Manejar error del slave
+                        tasks_received++;
+                        //write(STDOUT_FILENO, "Failed task\n", 13);
+                        sem_post(sem_newTask);
+                        int slen = sprintf(shm_buf, "Slave error. Task %s failed.\n", slaves[i].task);
+                        shm_buf += slen;
+                        kill_slave(slaves + i, &slaves_active);
                     }
                     
                 }
